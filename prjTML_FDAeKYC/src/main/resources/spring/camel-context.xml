@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="          http://www.springframework.org/schema/beans           http://www.springframework.org/schema/beans/spring-beans.xsd            http://camel.apache.org/schema/cxf           http://camel.apache.org/schema/cxf/camel-cxf.xsd                http://camel.apache.org/schema/spring                 http://camel.apache.org/schema/spring/camel-spring.xsd                http://cxf.apache.org/transports/http/configuration     http://cxf.apache.org/schemas/configuration/http-conf.xsd">
+    <cxf:cxfEndpoint address="http://0.0.0.0:8099/ReqFDARoute"
+        id="FDAeKYCReqSource" serviceClass="fdaekyc.tml.service.FDAwsdl" wsdlURL="FDAwsdl.wsdl">
+        <cxf:properties>
+            <entry key="dataFormat" value="MESSAGE"/>
+        </cxf:properties>
+    </cxf:cxfEndpoint>
+    <cxf:rsClient address="https://testapi.karza.in/v2/fda"
+        id="rsFDAAPI" loggingFeatureEnabled="true"/>
+    <cxf:rsClient address="https://testapi.karza.in/v3/name"
+        id="rsNameMatchAPI" loggingFeatureEnabled="true"/>
+    <camelContext id="camel" streamCache="true"
+        xmlns="http://camel.apache.org/schema/spring" xmlns:ser="http://service.TML.FDAeKYC/">
+        <route id="FDAeKYCReqSource" xmlns="http://camel.apache.org/schema/spring">
+            <from id="_from1" uri="cxf:bean:FDAeKYCReqSource"/>
+            <doTry id="_doTry1">
+                <log id="_log1" message="after setting constant headers____${body}"/>
+                <setHeader headerName="Content-Type" id="_setHeader4">
+                    <constant>application/json</constant>
+                </setHeader>
+                <setHeader headerName="x-karza-key" id="_setHeader5">
+                    <constant>9qvf2X7URXTSfuvficjh</constant>
+                </setHeader>
+                <setHeader headerName="consent" id="_setHeader1">
+                    <xpath>//ser:FDARequest/consent/text()</xpath>
+                </setHeader>
+                <setHeader headerName="licence_no" id="_setHeader2">
+                    <xpath>//ser:FDARequest/licence_no/text()</xpath>
+                </setHeader>
+                <setHeader headerName="state" id="_setHeader3">
+                    <xpath>//ser:FDARequest/state/text()</xpath>
+                </setHeader>
+                <setHeader headerName="name1" id="_setHeader6">
+                    <xpath resultType="java.lang.String">//ser:FDARequest/name1/text()</xpath>
+                </setHeader>
+                <setBody id="_setBody1">
+                    <simple>{"consent":"${header.consent}", "licence_no":"${header.licence_no}","state":"${header.state}"}</simple>
+                </setBody>
+                <to id="_to2" pattern="InOut" uri="cxfrs:bean:rsFDAAPI?throwExceptionOnFailure=false"/>
+                <log id="_log2" message="Response send to CRM_______ ${body}"/>
+                <choice id="_choice1">
+                    <when id="_when1">
+                        <simple>${header.CamelHttpResponseCode} == '200'</simple>
+                        <log id="_log1" message="Request Received from CRM____${body}"/>
+                        <setHeader headerName="Content-Type" id="_setHeader4">
+                            <constant>application/json</constant>
+                        </setHeader>
+                        <setHeader headerName="x-karza-key" id="_setHeader5">
+                            <constant>9qvf2X7URXTSfuvficjh</constant>
+                        </setHeader>
+                        <log id="_log6" message="Header Result_${header.name1}"/>
+                        <setHeader headerName="name2" id="_setHeader7">
+                            <jsonpath>$.result.name</jsonpath>
+                        </setHeader>
+                        <log id="_log5" message="Header Result_${header.name2}"/>
+                        <setHeader headerName="type" id="_setHeader8">
+                            <constant>individual</constant>
+                        </setHeader>
+                        <setHeader headerName="preset" id="_setHeader9">
+                            <constant>L</constant>
+                        </setHeader>
+                        <setBody id="_setBody3">
+                            <simple>{"name1":"${header.name1}", "name2":"${header.name2}","type":"${header.type}","preset":"${header.preset}"}</simple>
+                        </setBody>
+                        <log id="_log5" message="Header Result_${header._setBody3}"/>
+                        <to id="_to3" pattern="InOut" uri="cxfrs:bean:rsNameMatchAPI?throwExceptionOnFailure=false"/>
+                        <log id="_log2" message="after second request_______ ${body}"/>
+                        <setHeader headerName="requestId" id="_setHeader7">
+                            <jsonpath>$.requestId</jsonpath>
+                        </setHeader>
+                        <setHeader headerName="statusCode" id="_setHeader7">
+                            <jsonpath>$.statusCode</jsonpath>
+                        </setHeader>
+                        <setHeader headerName="score" id="_setHeader7">
+                            <jsonpath>$.result.score</jsonpath>
+                        </setHeader>
+                        <setHeader headerName="result" id="_setHeader7">
+                            <jsonpath>$.result.result</jsonpath>
+                        </setHeader>
+                        <setBody id="_setBody2">
+                            <simple>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.TML.FDAeKYC/"&gt;
+							   &lt;soapenv:Header/&gt;
+							   &lt;soapenv:Body&gt;
+							      &lt;ser:FDAResponse&gt;
+							         &lt;statusCode&gt;${header.statusCode}&lt;/statusCode&gt;
+							         	&lt;requestId&gt;${header.requestId}&lt;/requestId&gt;
+							         	&lt;result&gt;											
+												&lt;score&gt;${header.score}&lt;/score&gt;
+												&lt;result&gt;${header.result}&lt;/result&gt;											
+										&lt;/result&gt;									 	
+							      &lt;/ser:FDAResponse&gt;
+							   &lt;/soapenv:Body&gt;
+							&lt;/soapenv:Envelope&gt;
+						     </simple>
+                        </setBody>
+                    </when>
+                </choice>
+            </doTry>
+        </route>
+    </camelContext>
+</beans>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<definitions xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://service.TML.FDAeKYC/" targetNamespace="http://service.TML.FDAeKYC/" name="FDAwsdl">
+  
+  <types>
+	<xs:schema xmlns:tns="http://service.TML.FDAeKYC/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://service.TML.FDAeKYC/">
+        
+		<xs:element name="FDARequest" type="tns:FDARequestObject"/>
+		<xs:element name="FDAResponse" type="tns:FDAResponseObject" />
+		
+		<xs:complexType name="FDARequestObject">
+			<xs:sequence>
+				<xs:element name="consent" type="xs:string" minOccurs="0" />
+				<xs:element name="licence_no" type="xs:string" minOccurs="0" />
+				<xs:element name="state" type="xs:string" minOccurs="0" />
+				<xs:element name="name1" type="xs:string" minOccurs="0" />
+			</xs:sequence>
+        </xs:complexType>
+		
+		<xs:complexType name="FDAResponseObject">
+			<xs:sequence>
+                <xs:element name="KYC" type="tns:KYCObject" minOccurs="0" />
+				<xs:element name="NameMatch" type="tns:NameMatchObject" minOccurs="0" />				
+            </xs:sequence>
+        </xs:complexType>
+		
+		<xs:complexType name="KYCObject">
+			<xs:sequence>
+			    <xs:element name="status-code" type="xs:string" minOccurs="0" />
+				<xs:element name="request_id" type="xs:string" minOccurs="0" />
+				<xs:element name="KYCResult" type="tns:KYCResultObject" minOccurs="0" />				
+			</xs:sequence>
+		</xs:complexType>
+		
+		<xs:complexType name="KYCResultObject">
+			<xs:sequence>
+				<xs:element name="store_name" type="xs:string" minOccurs="0" />
+				<xs:element name="name" type="xs:string" minOccurs="0" />
+				<xs:element name="contact_number" type="xs:string" minOccurs="0" />
+				<xs:element name="license_detail" type="xs:string" minOccurs="0" />
+				<xs:element name="address" type="xs:string" minOccurs="0" />
+			</xs:sequence>
+		</xs:complexType>
+		
+		<xs:complexType name="NameMatchObject">
+			<xs:sequence>
+				<xs:element name="request_id" type="xs:string" minOccurs="0" />				
+				<xs:element name="statusCode" type="xs:string" minOccurs="0" />
+				<xs:element name="FDAResult" type="tns:FDAResultObject" minOccurs="0" />
+			</xs:sequence>
+		</xs:complexType>
+		
+		<xs:complexType name="FDAResultObject">
+			<xs:sequence>
+				<xs:element name="score" type="xs:string" minOccurs="0" />
+				<xs:element name="result" type="xs:string" minOccurs="0" />
+			</xs:sequence>
+		</xs:complexType>
+		</xs:schema>
+	</types>
+	
+	<message name="FDARequest">
+        <part name="parameters" element="tns:FDARequest" />
+    </message>
+	 <message name="FDAResponse">
+        <part name="parameters" element="tns:FDAResponse" />
+    </message>
+	
+	<portType name="FDAwsdl">
+        <operation name="FDARequest">
+            <input  message="tns:FDARequest" />
+            <output message="tns:FDAResponse" />
+        </operation>
+    </portType>
+	
+	<binding name="FDAwsdlPortBinding" type="tns:FDAwsdl">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+        <operation name="FDARequest">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+    </binding>
+	
+	<service name="FDAwsdl">
+        <port name="FDAwsdlPort" binding="tns:FDAwsdlPortBinding">
+            <soap:address location="http://0.0.0.0:8099/ReqFDAPRoute" />
+        </port>
+    </service>  
+  
+</definitions>
