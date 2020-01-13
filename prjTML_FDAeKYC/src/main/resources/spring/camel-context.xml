@@ -19,10 +19,6 @@
             <from id="_from1" uri="cxf:bean:FDAeKYCReqSource"/>
             <doTry id="_doTry1">
                 <log id="_log1" message="after setting constant headers____${body}"/>
-                <log id="_log11" message="after setting constant headers____${body}"/>
-                
-                 <log id="_log1" message="after setting constant headers____${body}"/>
-                <log id="_log11" message="after setting constant headers____${body}"/>
                 <setHeader headerName="Content-Type" id="_setHeader4">
                     <constant>application/json</constant>
                 </setHeader>
@@ -44,6 +40,7 @@
                 <setBody id="_setBody1">
                     <simple>{"consent":"${header.consent}", "licence_no":"${header.licence_no}","state":"${header.state}"}</simple>
                 </setBody>
+                <log id="_log5" message="Header Result_${header._setBody1}"/>
                 <to id="_to2" pattern="InOut" uri="cxfrs:bean:rsFDAAPI?throwExceptionOnFailure=false"/>
                 <log id="_log2" message="Response send to CRM_______ ${body}"/>
                 <choice id="_choice1">
@@ -67,6 +64,30 @@
                         <setHeader headerName="preset" id="_setHeader9">
                             <constant>L</constant>
                         </setHeader>
+                        <setHeader headerName="contact_number" id="_setHeader7">
+                            <jsonpath>$.result.contact_number</jsonpath>
+                        </setHeader>
+                        <setHeader headerName="address" id="_setHeader7">
+                            <jsonpath>$.result.address</jsonpath>
+                        </setHeader>
+                        <setHeader headerName="status-code" id="_setHeader7">
+                            <jsonpath>$.status-code</jsonpath>
+                        </setHeader>
+                        <choice id="_choice1">
+                            <when id="_when1">
+                                <simple>${header.status-code} == '101'</simple>
+                                <setHeader
+                                    headerName="Verification_status" id="_setHeader10">
+                                    <constant>VERIFIED</constant>
+                                </setHeader>
+                            </when>
+                            <otherwise id="_otherwise1">
+                                <setHeader
+                                    headerName="Verification_status" id="_setHeader2">
+                                    <constant>NOT VERIFIED</constant>
+                                </setHeader>
+                            </otherwise>
+                        </choice>
                         <setBody id="_setBody3">
                             <simple>{"name1":"${header.name1}", "name2":"${header.name2}","type":"${header.type}","preset":"${header.preset}"}</simple>
                         </setBody>
@@ -92,6 +113,11 @@
 							      &lt;ser:FDAResponse&gt;
 							         &lt;statusCode&gt;${header.statusCode}&lt;/statusCode&gt;
 							         	&lt;requestId&gt;${header.requestId}&lt;/requestId&gt;
+							         	&lt;Verification_status&gt;${header.Verification_status}&lt;/Verification_status&gt;
+							         	&lt;name1&gt;${header.name1}&lt;/name1&gt;
+							         	&lt;name2&gt;${header.name2}&lt;/name2&gt;
+							         	&lt;address&gt;${header.address}&lt;/address&gt;
+							         	&lt;contact_number&gt;${header.contact_number}&lt;/contact_number&gt;
 							         	&lt;result&gt;											
 												&lt;score&gt;${header.score}&lt;/score&gt;
 												&lt;result&gt;${header.result}&lt;/result&gt;											
@@ -103,6 +129,18 @@
                         </setBody>
                     </when>
                 </choice>
+                <doCatch id="_doCatch1">
+                    <exception>java.net.SocketTimeoutException</exception>
+                    <setFaultBody id="_setBody3">
+                        <simple>Timeout Exception while calling Parivahan Service.</simple>
+                    </setFaultBody>
+                </doCatch>
+                <doCatch id="_doCatch2">
+                    <exception>java.lang.Exception</exception>
+                    <setFaultBody id="_setBody4">
+                        <constant>Error Occurred. Please check Logs.</constant>
+                    </setFaultBody>
+                </doCatch>
             </doTry>
         </route>
     </camelContext>
