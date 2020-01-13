@@ -20,6 +20,9 @@
             <doTry id="_doTry1">
                 <log id="_log1" message="after setting constant headers____${body}"/>
                 <log id="_log11" message="after setting constant headers____${body}"/>
+                
+                 <log id="_log1" message="after setting constant headers____${body}"/>
+                <log id="_log11" message="after setting constant headers____${body}"/>
                 <setHeader headerName="Content-Type" id="_setHeader4">
                     <constant>application/json</constant>
                 </setHeader>
